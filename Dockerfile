@@ -24,8 +24,8 @@ RUN set -ex \
     && pip install Cython==$CYTHON_VERSION
 
 RUN set -ex \
-    && useradd kivy -mNG plugdev \
-    #-G adbusers \
+    && useradd kivy -mN \
+    && echo "kivy:kivy" | chpasswd \
     && mkdir -p $DIR \
     && chown kivy:users /opt \
     && chown kivy:users /src
@@ -36,7 +36,8 @@ RUN set -ex \
     && git clone https://github.com/kivy/buildozer \
     && cd buildozer \
     && python setup.py build \
-    && pip install -e .
+    && pip install -e . \
+    && sed -i -e 's/build.gradle/~build.gradle/g' /opt/buildozer/buildozer/targets/android.py
 
 RUN set -ex \
     && sudo -u kivy -i \
@@ -47,9 +48,9 @@ RUN set -ex \
 
 RUN ln -s /usr/local/bin/buildozer /bin/buildozer
 
-VOLUME $DIR
+RUN mkdir /buildozer && chown kivy /buildozer
+
 WORKDIR $DIR
 
-ENV HOME $DIR
 USER kivy
 
